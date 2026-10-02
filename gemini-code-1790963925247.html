@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بنك ومولد مذكرات التعليم الابتدائي - الأستاذ براحو أمين</title>
+  
+  <!-- خط تجوال وأيقونات FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- مكتبة Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { tajawal: ['Tajawal', 'sans-serif'] },
+          colors: {
+            brand: '#00853f',
+            dzred: '#d80027',
+            mfblue: '#0070f3'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-memo, #printable-memo * { visibility: visible; }
+      #printable-memo { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+  <!-- شريط التنبيه العلوي الرسمي -->
+  <header class="bg-slate-900 text-white text-xs py-2 px-4 border-b border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>الجمهورية الجزائرية الديمقراطية الشعبية • وزارة التربية الوطنية • مناهج الجيل الثاني</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="role-tag" class="bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded border border-slate-700">وضع الزائر</span>
+        <button onclick="toggleAdminModal()" id="auth-btn" class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1">
+          <i class="fa-solid fa-lock"></i> <span>دخول الأستاذ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- الترويسة وشريط التنقل -->
+  <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-xl shadow-md shadow-emerald-500/20">
+          <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-black text-slate-900 leading-tight">منصة مذكرات التعليم الابتدائي (1AP - 5AP)</h1>
+          <p class="text-xs font-semibold text-emerald-700">إشراف وتأطير: الأستاذ براحو أمين</p>
+        </div>
+      </div>
+
+      <!-- أزرار التبويبات الرئيسية -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="switchTab('bank')" id="tab-btn-bank" class="px-4 py-2 rounded-lg text-sm font-bold bg-emerald-50 text-emerald-700 transition flex items-center gap-2">
+          <i class="fa-solid fa-layer-group"></i> بنك المذكرات
+        </button>
+        <button onclick="switchTab('generator')" id="tab-btn-generator" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> مولّد المذكرات
+        </button>
+        <button onclick="switchTab('add')" id="tab-btn-add" class="hidden px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-emerald-600"></i> إضافة مذكرة / رابط
+        </button>
+        <button onclick="switchTab('export')" id="tab-btn-export" class="hidden px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-2">
+          <i class="fa-solid fa-code text-blue-600"></i> تصدير البيانات
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 no-print">
+
+    <!-- 1. قسم بنك المذكرات (مقسم لـ 5 سنوات) -->
+    <section id="section-bank" class="space-y-6">
+      
+      <!-- تصفح سريع حسب السنوات 1 إلى 5 -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <button onclick="selectGradeFilter('1AP')" id="btn-grade-1AP" class="grade-pill p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 text-center transition shadow-sm">
+          <span class="block text-xs font-bold text-slate-400">المستوى الأول</span>
+          <span class="text-sm font-black text-slate-800">السنة 1 ابتدائي</span>
+        </button>
+        <button onclick="selectGradeFilter('2AP')" id="btn-grade-2AP" class="grade-pill p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 text-center transition shadow-sm">
+          <span class="block text-xs font-bold text-slate-400">المستوى الثاني</span>
+          <span class="text-sm font-black text-slate-800">السنة 2 ابتدائي</span>
+        </button>
+        <button onclick="selectGradeFilter('3AP')" id="btn-grade-3AP" class="grade-pill p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 text-center transition shadow-sm">
+          <span class="block text-xs font-bold text-slate-400">المستوى الثالث</span>
+          <span class="text-sm font-black text-slate-800">السنة 3 ابتدائي</span>
+        </button>
+        <button onclick="selectGradeFilter('4AP')" id="btn-grade-4AP" class="grade-pill p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 text-center transition shadow-sm">
+          <span class="block text-xs font-bold text-slate-400">المستوى الرابع</span>
+          <span class="text-sm font-black text-slate-800">السنة 4 ابتدائي</span>
+        </button>
+        <button onclick="selectGradeFilter('5AP')" id="btn-grade-5AP" class="grade-pill p-3.5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 text-center transition shadow-sm">
+          <span class="block text-xs font-bold text-slate-400">المستوى الخامس</span>
+          <span class="text-sm font-black text-slate-800">السنة 5 ابتدائي</span>
+        </button>
+      </div>
+
+      <!-- فلتر المواد والبحث -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">المستوى</label>
+          <select id="filter-grade" onchange="renderCards()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5">
+            <option value="all">كافة المستويات (1AP - 5AP)</option>
+            <option value="1AP">السنة الأولى ابتدائي (1AP)</option>
+            <option value="2AP">السنة الثانية ابتدائي (2AP)</option>
+            <option value="3AP">السنة الثالثة ابتدائي (3AP)</option>
+            <option value="4AP">السنة الرابعة ابتدائي (4AP)</option>
+            <option value="5AP">السنة الخامسة ابتدائي (5AP)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">المادة</label>
+          <select id="filter-subject" onchange="renderCards()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5">
+            <option value="all">كافة المواد</option>
+            <option value="اللغة العربية">اللغة العربية</option>
+            <option value="الرياضيات">الرياضيات</option>
+            <option value="التربية العلمية">التربية العلمية والتكنولوجية</option>
+            <option value="التربية الإسلامية">التربية الإسلامية</option>
+            <option value="التربية المدنية">التربية المدنية</option>
+            <option value="التاريخ والجغرافيا">التاريخ والجغرافيا</option>
+            <option value="اللغة الفرنسية">اللغة الفرنسية</option>
+            <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
+            <option value="حزمة شاملة">حزمة شاملة للمستوى</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">الفصل</label>
+          <select id="filter-term" onchange="renderCards()" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5">
+            <option value="all">جميع الفصول</option>
+            <option value="الفصل الأول">الفصل الأول</option>
+            <option value="الفصل الثاني">الفصل الثاني</option>
+            <option value="الفصل الثالث">الفصل الثالث</option>
+            <option value="كامل السنة">كامل السنة</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">بحث بالعنوان أو المقطع</label>
+          <div class="relative">
+            <input type="text" id="search-query" oninput="renderCards()" placeholder="ابحث هنا..." class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5 pr-8">
+            <i class="fa-solid fa-magnifying-glass absolute right-3 top-3.5 text-slate-400 text-xs"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- شبكة المذكرات المرفوعة -->
+      <div id="mothakkirat-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+      <!-- في حالة عدم وجود مذكرات (الموقع فارغ وجاهز لملفاتك) -->
+      <div id="empty-state" class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200">
+        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="fa-regular fa-folder-open"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">المستودع فارغ وجاهز لمذكراتك</h3>
+        <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+          تم تفريغ كافة المذكرات السابقة. يمكنك البدء بإضافة مذكراتك عبر روابط MediaFire أو Google Drive، أو استخدام "مولد المذكرات" لإنشاء مذكرات وتصديرها بصيغة Word و PDF فوراً.
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. قسم مولّد المذكرات البيداغوجي الذكي -->
+    <section id="section-generator" class="hidden max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> مولّد المذكرات البيداغوجي (الجيل الثاني)
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">توليد وصياغة المذكرات الرسمية وطباعتها وتصديرها كـ Word أو PDF</p>
+        </div>
+        <button onclick="fillGeneratorExample()" type="button" class="px-3.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <i class="fa-solid fa-bolt"></i> نموذج تجريبي سريع
+        </button>
+      </div>
+
+      <form id="gen-form" onsubmit="generateMemo(event)" class="space-y-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المستوى <span class="text-red-500">*</span></label>
+            <select id="gen-grade" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm font-semibold">
+              <option value="السنة الأولى ابتدائي (1AP)">السنة الأولى ابتدائي (1AP)</option>
+              <option value="السنة الثانية ابتدائي (2AP)">السنة الثانية ابتدائي (2AP)</option>
+              <option value="السنة الثالثة ابتدائي (3AP)">السنة الثالثة ابتدائي (3AP)</option>
+              <option value="السنة الرابعة ابتدائي (4AP)">السنة الرابعة ابتدائي (4AP)</option>
+              <option value="السنة الخامسة ابتدائي (5AP)">السنة الخامسة ابتدائي (5AP)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المادة <span class="text-red-500">*</span></label>
+            <input type="text" id="gen-subject" required placeholder="مثال: اللغة العربية / رياضيات" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">الميدان / المقطع</label>
+            <input type="text" id="gen-field" placeholder="مثال: المقطع 01: القيم الإنسانية" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">النشاط / الموضوع <span class="text-red-500">*</span></label>
+            <input type="text" id="gen-activity" required placeholder="مثال: تراكيب نحوية (الفعل الماضي)" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">رقم المذكرة</label>
+            <input type="text" id="gen-number" value="01" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المدة الزمنية</label>
+            <input type="text" id="gen-duration" value="45 دقيقة" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">السندات والوسائل</label>
+            <input type="text" id="gen-tools" placeholder="كتاب التلميذ، صور، لوحة، مسلاط..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">الكفاءة الختامية / المركبة</label>
+            <textarea id="gen-comp" rows="2" placeholder="يتحكم في آليات..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">مؤشرات الكفاءة / أهداف التعلم</label>
+            <textarea id="gen-goals" rows="2" placeholder="يتعرف على... يميز بين... يوظف..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+          </div>
+        </div>
+
+        <!-- مراحل سير الحصة البيداغوجية -->
+        <div class="space-y-3 pt-2 border-t border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-emerald-600"></i> مراحل سير الحصة التعليمية
+          </h3>
+
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+            <span class="text-xs font-bold text-emerald-800">1. وضعية الانطلاق (05 إلى 10 دقائق):</span>
+            <textarea id="gen-step1" rows="2" placeholder="إثارة دافعية التلاميذ، تذكير بالمكتسبات القبلية، طرح إشكالية..." class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs"></textarea>
+          </div>
+
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+            <span class="text-xs font-bold text-blue-800">2. مرحلة بناء التعلمات (25 إلى 30 دقيقة):</span>
+            <textarea id="gen-step2" rows="3" placeholder="الأنشطة والتعليمات، الملاحظة والاكتشاف، بناء القاعدة وصياغة النتيجة..." class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs"></textarea>
+          </div>
+
+          <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
+            <span class="text-xs font-bold text-purple-800">3. الاستثمار والتقويم (10 دقائق):</span>
+            <textarea id="gen-step3" rows="2" placeholder="نشاط إدماجي فوري، تمارين على الألواح أو كراس النشاطات، تقويم مدى تحقق الهدف..." class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 shadow-md shadow-emerald-600/20 transition">
+            <i class="fa-solid fa-file-invoice"></i> توليد ومعاينة المذكرة
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 3. قسم إضافة مذكرة جديدة / روابط MediaFire (للأستاذ) -->
+    <section id="section-add" class="hidden max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+      <h2 class="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-plus-circle text-emerald-600"></i> إضافة مذكرة جديدة برابط MediaFire أو Drive
+      </h2>
+
+      <form id="add-form" onsubmit="saveNewMothakkira(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">عنوان المذكرة <span class="text-red-500">*</span></label>
+          <input type="text" id="m-title" required placeholder="مثال: حزمة مذكرات اللغة العربية المقطع 02" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المستوى <span class="text-red-500">*</span></label>
+            <select id="m-grade" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm font-bold">
+              <option value="1AP">السنة 1 ابتدائي (1AP)</option>
+              <option value="2AP">السنة 2 ابتدائي (2AP)</option>
+              <option value="3AP">السنة 3 ابتدائي (3AP)</option>
+              <option value="4AP">السنة 4 ابتدائي (4AP)</option>
+              <option value="5AP">السنة 5 ابتدائي (5AP)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المادة <span class="text-red-500">*</span></label>
+            <select id="m-subject" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+              <option value="اللغة العربية">اللغة العربية</option>
+              <option value="الرياضيات">الرياضيات</option>
+              <option value="التربية العلمية">التربية العلمية</option>
+              <option value="التربية الإسلامية">التربية الإسلامية</option>
+              <option value="التربية المدنية">التربية المدنية</option>
+              <option value="التاريخ والجغرافيا">التاريخ والجغرافيا</option>
+              <option value="اللغة الفرنسية">اللغة الفرنسية</option>
+              <option value="اللغة الإنجليزية">اللغة الإنجليزية</option>
+              <option value="حزمة شاملة">حزمة شاملة</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">الفصل</label>
+            <select id="m-term" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+              <option value="الفصل الأول">الفصل الأول</option>
+              <option value="الفصل الثاني">الفصل الثاني</option>
+              <option value="الفصل الثالث">الفصل الثالث</option>
+              <option value="كامل السنة">كامل السنة</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">صيغة الملف</label>
+            <select id="m-filetype" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+              <option value="Word (DOCX)">Word قابل للتعديل (DOCX)</option>
+              <option value="PDF">مستند PDF جاهز للطباعة</option>
+              <option value="حزمة ملفات (ZIP)">حزمة ملفات مضغوطة (ZIP/RAR)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">المقطع / الأسبوع</label>
+            <input type="text" id="m-unit" placeholder="مثال: المقطع 02 أو الأسبوع 05" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">
+            رابط MediaFire أو Google Drive <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="url" id="m-link" required placeholder="https://www.mediafire.com/... أو https://drive.google.com/..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 pl-9 text-sm text-left font-mono">
+            <i class="fa-solid fa-link absolute left-3 top-3 text-slate-400"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">ملاحظات أو وصف بيداغوجي</label>
+          <textarea id="m-desc" rows="2" placeholder="وصف محتوى المذكرة والكفاءات..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="switchTab('bank')" class="px-4 py-2 border rounded-lg text-sm font-bold text-slate-600">إلغاء</button>
+          <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold flex items-center gap-2">
+            <i class="fa-solid fa-check"></i> حفظ وإضافة المذكرة
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 4. قسم تصدير البيانات (للأستاذ) -->
+    <section id="section-export" class="hidden max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-code text-blue-600"></i> كود بيانات المذكرات
+      </h2>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        عند إضافة مذكرات جديدة، يمكنك نسخ هذا الكود وحفظه لدمجه مستقبلاً:
+      </p>
+      <textarea id="export-code-box" readonly rows="8" class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl text-xs font-mono"></textarea>
+      <div class="flex justify-between items-center">
+        <button onclick="copyExportCode()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-2">
+          <i class="fa-regular fa-copy"></i> نسخ كود المذكرات
+        </button>
+        <span id="copy-alert" class="text-xs font-bold text-emerald-600 hidden">تم النسخ بنجاح!</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- نافذة المعاينة والطباعة والتصدير لمولد المذكرات -->
+  <div id="memo-preview-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden overflow-y-auto p-4 sm:p-6 flex justify-center">
+    <div class="bg-white max-w-4xl w-full rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto border border-slate-200">
+      
+      <!-- أزرار الإجراءات بالنافذة -->
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center no-print">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-lines text-emerald-400"></i>
+          <span class="font-bold text-sm">معاينة المذكرة البيداغوجية الرسمية</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportGeneratedWord()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-word"></i> تحميل Word (.docx)
+          </button>
+          <button onclick="window.print()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-print"></i> طباعة / حفظ PDF
+          </button>
+          <button onclick="closePreviewModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- محتوى ورقة المذكرة الرسمية للطباعة A4 -->
+      <div id="printable-memo" class="p-8 sm:p-10 bg-white text-slate-900 text-sm leading-relaxed">
+        <!-- ترويسة الجمهورية الرسمية -->
+        <div class="border-b-2 border-slate-900 pb-4 mb-5 text-center space-y-1">
+          <h4 class="text-xs font-bold">الجمهورية الجزائرية الديمقراطية الشعبية</h4>
+          <h4 class="text-xs font-bold">وزارة التربية الوطنية</h4>
+          <div class="flex justify-between text-[11px] font-semibold pt-2 px-2 text-slate-600">
+            <span>مديرية التربية لولاية: مستغانم</span>
+            <span>مفتشية التعليم الابتدائي</span>
+            <span>المدرسة الابتدائية: ....................</span>
+          </div>
+        </div>
+
+        <div class="text-center my-4">
+          <span class="inline-block bg-slate-900 text-white text-sm font-black px-6 py-1.5 rounded-md">
+            مذكرة بيداغوجية رقم: <span id="view-number">01</span>
+          </span>
+        </div>
+
+        <!-- جدول بطاقة الحصة والمعلومات البيداغوجية -->
+        <table class="w-full border-collapse border border-slate-800 text-xs mb-5">
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100 w-1/4">المستوى:</td>
+            <td id="view-grade" class="border border-slate-800 p-2 w-1/4 font-semibold"></td>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100 w-1/4">المادة:</td>
+            <td id="view-subject" class="border border-slate-800 p-2 w-1/4 font-semibold"></td>
+          </tr>
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">الميدان / المقطع:</td>
+            <td id="view-field" class="border border-slate-800 p-2"></td>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">النشاط / الموضوع:</td>
+            <td id="view-activity" class="border border-slate-800 p-2 font-bold text-emerald-800"></td>
+          </tr>
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">المدة الزمنية:</td>
+            <td id="view-duration" class="border border-slate-800 p-2"></td>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">الأستاذ المؤطر:</td>
+            <td class="border border-slate-800 p-2 font-bold">الأستاذ براحو أمين</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">السندات والوسائل:</td>
+            <td colspan="3" id="view-tools" class="border border-slate-800 p-2"></td>
+          </tr>
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">الكفاءة الختامية:</td>
+            <td colspan="3" id="view-comp" class="border border-slate-800 p-2"></td>
+          </tr>
+          <tr>
+            <td class="border border-slate-800 p-2 font-bold bg-slate-100">أهداف التعلم ومؤشرات الكفاءة:</td>
+            <td colspan="3" id="view-goals" class="border border-slate-800 p-2 font-semibold"></td>
+          </tr>
+        </table>
+
+        <!-- جدول سير الأنشطة التعليمية التعلمية -->
+        <table class="w-full border-collapse border border-slate-800 text-xs">
+          <thead>
+            <tr class="bg-slate-200 text-center font-bold">
+              <th class="border border-slate-800 p-2.5 w-1/4">المراحل والوضعيات</th>
+              <th class="border border-slate-800 p-2.5 w-2/4">سير الأنشطة والتعليمات التعلمية</th>
+              <th class="border border-slate-800 p-2.5 w-1/4">معايير ومؤشرات التقويم</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-slate-800 p-3 font-bold align-top bg-slate-50">
+                مرحلة الانطلاق<br>
+                <span class="text-[10px] text-slate-500 font-normal">(05 - 10 د)</span>
+              </td>
+              <td id="view-step1" class="border border-slate-800 p-3 align-top whitespace-pre-line leading-relaxed"></td>
+              <td class="border border-slate-800 p-3 align-top text-slate-600">استرجاع المكتسبات، التحفيز والملاحظة.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-800 p-3 font-bold align-top bg-slate-50">
+                مرحلة بناء التعلمات<br>
+                <span class="text-[10px] text-slate-500 font-normal">(25 - 30 د)</span>
+              </td>
+              <td id="view-step2" class="border border-slate-800 p-3 align-top whitespace-pre-line leading-relaxed"></td>
+              <td class="border border-slate-800 p-3 align-top text-slate-600">اكتشاف الظاهرة، استنتاج القاعدة والتدريب.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-800 p-3 font-bold align-top bg-slate-50">
+                الاستثمار والتقويم<br>
+                <span class="text-[10px] text-slate-500 font-normal">(10 د)</span>
+              </td>
+              <td id="view-step3" class="border border-slate-800 p-3 align-top whitespace-pre-line leading-relaxed"></td>
+              <td class="border border-slate-800 p-3 align-top text-slate-600">القدرة على التوظيف السليم وحل المشكل.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- توقيع وتأشيرة المفتش والمعلم -->
+        <div class="flex justify-between items-center mt-10 pt-4 px-6 text-xs font-bold text-slate-700">
+          <span>إمضاء وختم الأستاذ: براحو أمين</span>
+          <span>ملاحظات وتأشيرة السيد المفتش: ....................</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- نافذة تسجيل دخول الأستاذ -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white max-w-sm w-full rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="toggleAdminModal()" class="absolute left-4 top-4 text-slate-400 hover:text-slate-600">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center mx-auto mb-2 text-xl">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h3 class="font-black text-slate-900">لوحة الأستاذ براحو أمين</h3>
+        <p class="text-xs text-slate-500">أدخل الرمز السري للإدارة وإضافة الروابط</p>
+      </div>
+      <form onsubmit="handleLogin(event)" class="space-y-3">
+        <input type="password" id="admin-pass" required placeholder="الرمز السري (الافتراضي: 1234)" class="w-full bg-slate-50 border rounded-lg p-2.5 text-center font-bold text-base focus:ring-2 focus:ring-emerald-500">
+        <p id="login-err" class="text-xs text-red-500 text-center font-bold hidden">الرمز غير صحيح</p>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white py-2.5 rounded-lg text-sm font-bold">تسجيل الدخول</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- التذييل -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 no-print">
+    <p class="font-bold text-slate-700">بنك ومولد مذكرات التعليم الابتدائي (1AP - 5AP) • إشراف الأستاذ براحو أمين</p>
+    <p class="mt-1">مناهج الجيل الثاني • الجمهورية الجزائرية الديمقراطية الشعبية</p>
+  </footer>
+
+  <!-- ================= منطق الجافاسكربت ================= -->
+  <script>
+    // تم تفريغ قاعدة المذكرات بالكامل بناء على طلبك
+    let mothakkirat = JSON.parse(localStorage.getItem('berraho_clean_mothakkirat')) || [];
+    let isAdmin = sessionStorage.getItem('berraho_clean_is_admin') === 'true';
+    let currentMemoData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateAdminUI();
+      renderCards();
+      updateExportCode();
+    });
+
+    function switchTab(tabId) {
+      document.getElementById('section-bank').classList.add('hidden');
+      document.getElementById('section-generator').classList.add('hidden');
+      document.getElementById('section-add').classList.add('hidden');
+      document.getElementById('section-export').classList.add('hidden');
+
+      document.getElementById('tab-btn-bank').classList.remove('bg-emerald-50', 'text-emerald-700');
+      document.getElementById('tab-btn-generator').classList.remove('bg-emerald-50', 'text-emerald-700');
+      document.getElementById('tab-btn-add').classList.remove('bg-emerald-50', 'text-emerald-700');
+      document.getElementById('tab-btn-export').classList.remove('bg-emerald-50', 'text-emerald-700');
+
+      if (tabId === 'bank') {
+        document.getElementById('section-bank').classList.remove('hidden');
+        document.getElementById('tab-btn-bank').classList.add('bg-emerald-50', 'text-emerald-700');
+      } else if (tabId === 'generator') {
+        document.getElementById('section-generator').classList.remove('hidden');
+        document.getElementById('tab-btn-generator').classList.add('bg-emerald-50', 'text-emerald-700');
+      } else if (tabId === 'add') {
+        document.getElementById('section-add').classList.remove('hidden');
+        document.getElementById('tab-btn-add').classList.add('bg-emerald-50', 'text-emerald-700');
+      } else if (tabId === 'export') {
+        document.getElementById('section-export').classList.remove('hidden');
+        document.getElementById('tab-btn-export').classList.add('bg-emerald-50', 'text-emerald-700');
+        updateExportCode();
+      }
+    }
+
+    function selectGradeFilter(grade) {
+      document.getElementById('filter-grade').value = grade;
+      document.querySelectorAll('.grade-pill').forEach(btn => {
+        btn.classList.remove('border-emerald-600', 'bg-emerald-50/50', 'ring-2', 'ring-emerald-500');
+      });
+      const activeBtn = document.getElementById('btn-grade-' + grade);
+      if (activeBtn) activeBtn.classList.add('border-emerald-600', 'bg-emerald-50/50', 'ring-2', 'ring-emerald-500');
+      renderCards();
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('mothakkirat-grid');
+      const empty = document.getElementById('empty-state');
+      
+      const grade = document.getElementById('filter-grade').value;
+      const subject = document.getElementById('filter-subject').value;
+      const term = document.getElementById('filter-term').value;
+      const query = document.getElementById('search-query').value.trim().toLowerCase();
+
+      const filtered = mothakkirat.filter(item => {
+        const matchGrade = (grade === 'all' || item.grade === grade);
+        const matchSubject = (subject === 'all' || item.subject === subject);
+        const matchTerm = (term === 'all' || item.term === term);
+        const matchQuery = !query || item.title.toLowerCase().includes(query) || (item.desc && item.desc.toLowerCase().includes(query));
+        return matchGrade && matchSubject && matchTerm && matchQuery;
+      });
+
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between";
+
+        let gradeLabel = item.grade;
+        if (item.grade === '1AP') gradeLabel = 'السنة 1 ابتدائي';
+        if (item.grade === '2AP') gradeLabel = 'السنة 2 ابتدائي';
+        if (item.grade === '3AP') gradeLabel = 'السنة 3 ابتدائي';
+        if (item.grade === '4AP') gradeLabel = 'السنة 4 ابتدائي';
+        if (item.grade === '5AP') gradeLabel = 'السنة 5 ابتدائي';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-800 border-emerald-200">
+                ${gradeLabel}
+              </span>
+              <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                ${item.term || 'الفصل الأول'}
+              </span>
+            </div>
+
+            <h3 class="font-bold text-slate-900 text-base leading-snug mb-2">${item.title}</h3>
+            
+            <div class="flex items-center gap-3 text-xs text-slate-500 mb-3">
+              <span><i class="fa-solid fa-book text-emerald-600 ml-1"></i> ${item.subject}</span>
+              ${item.unit ? `<span><i class="fa-solid fa-layer-group text-slate-400 ml-1"></i> ${item.unit}</span>` : ''}
+            </div>
+
+            ${item.desc ? `<p class="text-xs text-slate-500 line-clamp-2 mb-4 leading-relaxed">${item.desc}</p>` : ''}
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+              <i class="fa-regular fa-file-${item.fileType && item.fileType.includes('PDF') ? 'pdf text-red-500' : 'word text-blue-500'}"></i>
+              ${item.fileType || 'مستند'}
+            </span>
+
+            <div class="flex items-center gap-1.5">
+              ${isAdmin ? `
+                <button onclick="deleteMothakkira('${item.id}')" title="حذف المذكرة" class="p-2 text-red-500 hover:bg-red-50 rounded-lg text-xs transition">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              ` : ''}
+              
+              <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
+                <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
+              </a>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // حفظ مذكرة جديدة في القائمة
+    function saveNewMothakkira(e) {
+      e.preventDefault();
+      const newM = {
+        id: "m-" + Date.now(),
+        title: document.getElementById('m-title').value.trim(),
+        grade: document.getElementById('m-grade').value,
+        subject: document.getElementById('m-subject').value,
+        term: document.getElementById('m-term').value,
+        unit: document.getElementById('m-unit').value.trim(),
+        fileType: document.getElementById('m-filetype').value,
+        link: document.getElementById('m-link').value.trim(),
+        desc: document.getElementById('m-desc').value.trim(),
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      mothakkirat.unshift(newM);
+      localStorage.setItem('berraho_clean_mothakkirat', JSON.stringify(mothakkirat));
+      document.getElementById('add-form').reset();
+      switchTab('bank');
+      renderCards();
+      alert('تمت إضافة المذكرة بنجاح!');
+    }
+
+    function deleteMothakkira(id) {
+      if (!confirm('هل تريد حذف هذه المذكرة؟')) return;
+      mothakkirat = mothakkirat.filter(item => item.id !== id);
+      localStorage.setItem('berraho_clean_mothakkirat', JSON.stringify(mothakkirat));
+      renderCards();
+      updateExportCode();
+    }
+
+    // --- منطق مولّد المذكرات ---
+    function generateMemo(e) {
+      e.preventDefault();
+      currentMemoData = {
+        grade: document.getElementById('gen-grade').value,
+        subject: document.getElementById('gen-subject').value.trim(),
+        field: document.getElementById('gen-field').value.trim(),
+        activity: document.getElementById('gen-activity').value.trim(),
+        number: document.getElementById('gen-number').value.trim(),
+        duration: document.getElementById('gen-duration').value.trim(),
+        tools: document.getElementById('gen-tools').value.trim(),
+        comp: document.getElementById('gen-comp').value.trim(),
+        goals: document.getElementById('gen-goals').value.trim(),
+        step1: document.getElementById('gen-step1').value.trim(),
+        step2: document.getElementById('gen-step2').value.trim(),
+        step3: document.getElementById('gen-step3').value.trim(),
+      };
+
+      document.getElementById('view-grade').textContent = currentMemoData.grade;
+      document.getElementById('view-subject').textContent = currentMemoData.subject;
+      document.getElementById('view-field').textContent = currentMemoData.field || '---';
+      document.getElementById('view-activity').textContent = currentMemoData.activity;
+      document.getElementById('view-number').textContent = currentMemoData.number || '01';
+      document.getElementById('view-duration').textContent = currentMemoData.duration || '45 د';
+      document.getElementById('view-tools').textContent = currentMemoData.tools || 'كتاب التلميذ، السبورة، الألواح';
+      document.getElementById('view-comp').textContent = currentMemoData.comp || 'التحكم في الموارد اللغوية والمعرفية وتوظيفها في وضعيات تواصلية دالة.';
+      document.getElementById('view-goals').textContent = currentMemoData.goals || 'أن يتعرف التلميذ على المفهوم ويوظفه بصورة سليمة.';
+      document.getElementById('view-step1').textContent = currentMemoData.step1 || 'تذكير بالمكتسبات السابقة وطرح وضعية انطلاق مثيرة للاهتمام.';
+      document.getElementById('view-step2').textContent = currentMemoData.step2 || 'عرض السند، الملاحظة والمناقشة، بناء القاعدة واستنتاجها جماعياً.';
+      document.getElementById('view-step3').textContent = currentMemoData.step3 || 'تطبيق فوري على الألواح أو الكراس لتقويم مدى تحقق الكفاءة.';
+
+      document.getElementById('memo-preview-modal').classList.remove('hidden');
+    }
+
+    function closePreviewModal() {
+      document.getElementById('memo-preview-modal').classList.add('hidden');
+    }
+
+    function fillGeneratorExample() {
+      document.getElementById('gen-grade').value = "السنة الرابعة ابتدائي (4AP)";
+      document.getElementById('gen-subject').value = "اللغة العربية";
+      document.getElementById('gen-field').value = "المقطع 02: الحياة الاجتماعية والرياضية";
+      document.getElementById('gen-activity').value = "تراكيب نحوية: الفاعل وعلامات إعرابه";
+      document.getElementById('gen-number').value = "12";
+      document.getElementById('gen-duration').value = "45 دقيقة";
+      document.getElementById('gen-tools').value = "كتاب اللغة ص 35، السبورة، الألواح، بطاقات الكلمات";
+      document.getElementById('gen-comp').value = "يميز التلميذ بين مكونات الجملة الفعلية ويوظف الفاعل في إنتاجاته الشفوية والكتابية.";
+      document.getElementById('gen-goals').value = "1. يتعرف على الفاعل ويسأل عنه بـ (مَن؟).\n2. يستنتج أن الفاعل اسم مرفوع دائماً.";
+      document.getElementById('gen-step1').value = "- مراجعة: استخراج فعل من جملة معطاة على السبورة.\n- طرح وضعية الانطلاق: (رسم التلميذُ لوحةً) من الذي رسم اللوحة؟";
+      document.getElementById('gen-step2').value = "- قراءة الأمثلة وعزل الكلمات المستهدفة.\n- مناقشة الأسئلة: ما نوع الكلمة؟ ما حركتها الإعرابية؟\n- التوصل للقاعدة واستنتاجها: الفاعل هو اسم مرفوع يدل على من قام بالفعل.";
+      document.getElementById('gen-step3').value = "- تمرين تطبيقي على كراس النشاطات: عين الفاعل واضبطه بالشكل.\n- إنتاج جمل فعلية تحتوي على فاعل مرفوع.";
+    }
+
+    // تصدير مباشر إلى Word (.docx)
+    function exportGeneratedWord() {
+      if (!currentMemoData) return;
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>مذكرة بيداغوجية</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; direction: rtl; text-align: right; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            th, td { border: 1px solid black; padding: 6px; font-size: 11pt; }
+            .header { text-align: center; margin-bottom: 20px; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            الجمهورية الجزائرية الديمقراطية الشعبية<br>
+            وزارة التربية الوطنية<br>
+            مذكرة بيداغوجية لمناهج الجيل الثاني (إعداد: الأستاذ براحو أمين)
+          </div>
+          ${document.getElementById('printable-memo').innerHTML}
+        </body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `مذكرة_${currentMemoData.activity || 'بيداغوجية'}.doc`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // --- كود التصدير وإدارة المشرف ---
+    function updateExportCode() {
+      const box = document.getElementById('export-code-box');
+      if (box) box.value = JSON.stringify(mothakkirat, null, 2);
+    }
+
+    function copyExportCode() {
+      const box = document.getElementById('export-code-box');
+      box.select();
+      navigator.clipboard.writeText(box.value).then(() => {
+        const alertSpan = document.getElementById('copy-alert');
+        alertSpan.classList.remove('hidden');
+        setTimeout(() => alertSpan.classList.add('hidden'), 3000);
+      });
+    }
+
+    function toggleAdminModal() {
+      if (isAdmin) {
+        if (confirm('هل تريد تسجيل الخروج؟')) {
+          isAdmin = false;
+          sessionStorage.removeItem('berraho_clean_is_admin');
+          updateAdminUI();
+          renderCards();
+        }
+      } else {
+        document.getElementById('login-modal').classList.toggle('hidden');
+        document.getElementById('admin-pass').value = '';
+        document.getElementById('login-err').classList.add('hidden');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      if (document.getElementById('admin-pass').value === '1234') {
+        isAdmin = true;
+        sessionStorage.setItem('berraho_clean_is_admin', 'true');
+        document.getElementById('login-modal').classList.add('hidden');
+        updateAdminUI();
+        renderCards();
+      } else {
+        document.getElementById('login-err').classList.remove('hidden');
+      }
+    }
+
+    function updateAdminUI() {
+      const roleTag = document.getElementById('role-tag');
+      const authBtn = document.getElementById('auth-btn');
+      const tabAdd = document.getElementById('tab-btn-add');
+      const tabExport = document.getElementById('tab-btn-export');
+
+      if (isAdmin) {
+        roleTag.textContent = "الأستاذ براحو (مشرف)";
+        roleTag.className = "bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded border border-emerald-500/40 font-bold";
+        authBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> <span>خروج</span>`;
+        tabAdd.classList.remove('hidden');
+        tabExport.classList.remove('hidden');
+      } else {
+        roleTag.textContent = "وضع الزائر";
+        roleTag.className = "bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded border border-slate-700";
+        authBtn.innerHTML = `<i class="fa-solid fa-lock"></i> <span>دخول الأستاذ</span>`;
+        tabAdd.classList.add('hidden');
+        tabExport.classList.add('hidden');
+        if (!document.getElementById('section-add').classList.contains('hidden') || !document.getElementById('section-export').classList.contains('hidden')) {
+          switchTab('bank');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
